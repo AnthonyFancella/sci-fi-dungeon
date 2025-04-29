@@ -21,7 +21,7 @@ while running:
             if event.type == pygame.QUIT or (event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE):
                 running = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RIGHT:
+                if event.key == pygame.K_RIGHT and world.player.state is not SHOOTING:
                     if world.player.state is not WALKING:
                         world.player.new_state = WALKING
                     world.player.direction = RIGHT
@@ -101,7 +101,9 @@ while running:
         
         dt = pygame.time.Clock().tick(60) / 1000
         
+
         world.update(screen, dt)
+
         pygame.display.flip()
     else:
         for event in pygame.event.get():

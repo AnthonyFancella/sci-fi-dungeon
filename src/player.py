@@ -29,8 +29,8 @@ class Player(pygame.sprite.Sprite):
         self.mask      = pygame.mask.from_surface(self.image)
         self.rect.x    = 2448
         self.rect.y    = 1152
-        self.on_wall_v = False
-        self.on_wall_h = False
+        self.dx        = 0
+        self.dy        = 0
         
         self.health = 6
         
@@ -195,17 +195,27 @@ class Player(pygame.sprite.Sprite):
                 self.animation = player_pistol_walking
             self.current_gun = PISTOL
     
+    def mid_update(self, dt):
+        if self.horizontal is RIGHT:
+            self.dx = 95 * dt
+        if self.horizontal is LEFT:
+            self.dx = -95 * dt
+        if self.vertical is UP:
+            self.dy = -90 * dt
+        if self.vertical is DOWN:
+            self.dy = 90 * dt
+    
     def update(self, screen, dt):
         self.change_state()
         if self.state is WALKING:
-            if self.horizontal is RIGHT and not self.on_wall_h:
-                self.rect.x += 100 * dt
-            if self.horizontal is LEFT and not self.on_wall_h:
-                self.rect.x -= 100 * dt
-            if self.vertical is UP and not self.on_wall_v:
-                self.rect.y -= 75 * dt
-            if self.vertical is DOWN and not self.on_wall_v:
-                self.rect.y += 75 * dt
+            if self.horizontal is RIGHT:
+                self.rect.x += self.dx
+            if self.horizontal is LEFT:
+                self.rect.x += self.dx
+            if self.vertical is UP:
+                self.rect.y += self.dy
+            if self.vertical is DOWN:
+                self.rect.y += self.dy
         self.animate(dt)
         screen.blit(self.image, (self.rect.x, self.rect.y))
         

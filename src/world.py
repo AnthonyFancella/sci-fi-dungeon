@@ -3,6 +3,7 @@ from src.level import Level
 from src.player import Player
 from src.static import *
 from src.minion_1 import Minion1
+from src.minion_2 import Minion2
 from src.deco_map import *
 import pygame
 import random
@@ -83,7 +84,11 @@ class World:
                     if self.level.rooms[i][j] == 1 and random.randint(0, 1000) < 100 and (i != 4 and j != 4):
                         e_x = random.randint(50, 494) + x
                         e_y = random.randint(50, 206) + y
-                        self.enemies.append(Minion1(self, e_x, e_y))
+                        e = random.randint(0, 1000)
+                        if e > 500:
+                            self.enemies.append(Minion2(self, e_x, e_y))
+                        else:
+                            self.enemies.append(Minion1(self, e_x, e_y))
                         num_enemies += 1
                         spawned = True
                     x += 540
@@ -175,30 +180,45 @@ class World:
                     e.bit = True
         self.surface.blit(self.background, (self.player.rect.x, self.player.rect.y), self.player.rect)
         
-        counter = 0
+        self.player.mid_update(dt)
+        
+        col_rect = pygame.Rect(self.player.rect.x + self.player.dx, self.player.rect.y + self.player.dy, self.player.rect.width, self.player.rect.height)
         for wall in self.walls:
-            if self.player.rect.colliderect(wall):
-                if self.player.rect.bottom < wall.top + 2:
-                    self.player.on_wall_v = True
+            if col_rect.colliderect(wall):
+                was_touching = True
+                if col_rect.bottom <= wall.top + 3:
+                    self.player.dy = 0
                     self.player.rect.bottom = wall.top
-                if self.player.rect.top > wall.bottom - 2:
-                    self.player.on_wall_v = True
-                    self.player.rect.top = wall.bottom
-                if self.player.rect.right < wall.left + 3:
-                    self.player.on_wall_h = True
+                if col_rect.top >= wall.bottom - 3:
+                    self.player.dy = 0
+                    col_rect.top = wall.bottom
+                if col_rect.right <= wall.left + 3:
+                    self.player.dx = 0
                     self.player.rect.right = wall.left
-                if self.player.rect.left > wall.right - 3:
-                    self.player.on_wall_h = True
+                if col_rect.left >= wall.right - 3:
+                    self.player.dx = 0
                     self.player.rect.left = wall.right
-            else:
-                counter += 1
-        if counter == len(self.walls):
-            self.player.on_wall_v = False
-            self.player.on_wall_h = False
+                
         self.player.update(self.surface, dt)
         for e in self.enemies:
             if e.state is BITING:
                 self.player.new_state = IDLE
+            e.mid_update(dt)    
+            col_rect = pygame.Rect(e.rect.x + e.dx, e.rect.y + e.dy, e.rect.width, e.rect.height)
+            for wall in self.walls:
+                if col_rect.colliderect(wall):
+                    if col_rect.bottom <= wall.top + 3:
+                        e.dy = 0
+                        e.rect.bottom = wall.top
+                    if col_rect.top >= wall.bottom - 3:
+                        e.dy = 0
+                        col_rect.top = wall.bottom
+                    if col_rect.right <= wall.left + 3:
+                        e.dx = 0
+                        e.rect.right = wall.left
+                    if col_rect.left >= wall.right - 3:
+                        e.dx = 0
+                        e.rect.left = wall.right
             e.update(self.surface, dt)
             if e.health <= 0:
                 self.surface.blit(self.background, (e.rect.x, e.rect.y), e.rect)
@@ -260,22 +280,12 @@ class World:
                 dt = pygame.time.Clock().tick(60) / 1000
                 self.surface.blit(self.background, (self.player.rect.x, self.player.rect.y), self.player.rect)
                 self.player.update(self.surface, dt)
-                if self.player.rect.x - screen.get_rect().width / 2 + 32 < 0:
-                    screen.blit(self.surface, (0, 0), (0, 0, screen.get_rect().width, screen.get_rect().height))
-                elif self.player.rect.x - screen.get_rect().width / 2 + 32 > self.surface.get_rect().width - screen.get_rect().width:
-                    screen.blit(self.surface, (0, 0), (self.surface.get_rect().width - screen.get_rect().width, 0, screen.get_rect().width, screen.get_rect().height))
-                else:
-                    screen.blit(self.surface, (0, 0), (self.player.rect.x - screen.get_rect().width / 2 + 32, 0, screen.get_rect().width, screen.get_rect().height))
+                screen.blit(self.surface, (0, 0), (self.player.rect.x - screen.get_rect().width / 2 + 32, self.player.rect.y - screen.get_rect().height / 2 + 32, screen.get_rect().width, screen.get_rect().height))
                 pygame.display.update()
             
             while self.player.frame < 4:
                 dt = pygame.time.Clock().tick(60) / 1000
                 self.surface.blit(self.background, (self.player.rect.x, self.player.rect.y), self.player.rect)
                 self.player.update(self.surface, dt)
-                if self.player.rect.x - screen.get_rect().width / 2 + 32 < 0:
-                    screen.blit(self.surface, (0, 0), (0, 0, screen.get_rect().width, screen.get_rect().height))
-                elif self.player.rect.x - screen.get_rect().width / 2 + 32 > self.surface.get_rect().width - screen.get_rect().width:
-                    screen.blit(self.surface, (0, 0), (self.surface.get_rect().width - screen.get_rect().width, 0, screen.get_rect().width, screen.get_rect().height))
-                else:
-                    screen.blit(self.surface, (0, 0), (self.player.rect.x - screen.get_rect().width / 2 + 32, 0, screen.get_rect().width, screen.get_rect().height))
+                screen.blit(self.surface, (0, 0), (self.player.rect.x - screen.get_rect().width / 2 + 32, self.player.rect.y - screen.get_rect().height / 2 + 32, screen.get_rect().width, screen.get_rect().height))
                 pygame.display.update()

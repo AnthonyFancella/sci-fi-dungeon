@@ -1,14 +1,14 @@
 import pygame, random
 from src.static import *
-from src.minion_1_map import *
+from src.minion_2_map import *
 
-class Minion1(pygame.sprite.Sprite):
+class Minion2(pygame.sprite.Sprite):
     def __init__(self, world, x, y):
         pygame.sprite.Sprite.__init__(self)
         
         self.world = world
         
-        self.animation  = minion_1_idle
+        self.animation  = minion_2_idle
         self.anim_timer = 0
         self.anim_time  = .75
         self.frame      = 0
@@ -22,7 +22,7 @@ class Minion1(pygame.sprite.Sprite):
         self.horizontal = None
         self.vertical   = None
         
-        self.health = random.randint(100, self.world.player.level * 200)
+        self.health = random.randint(150, self.world.player.level * 225)
         
         self.image  = self.animation[self.frame]
         self.rect   = self.image.get_rect()
@@ -38,19 +38,19 @@ class Minion1(pygame.sprite.Sprite):
         else:
             if self.new_state == WALKING:
                 self.state      = WALKING
-                self.animation  = minion_1_walk
+                self.animation  = minion_2_walk
                 self.frame      = 0
                 self.anim_time  = .5
                 self.anim_timer = 0
             if self.new_state == BITING:
                 self.state      = BITING
-                self.animation  = minion_1_bite
+                self.animation  = minion_2_bite
                 self.frame      = 0
                 self.anim_time  = .3
                 self.anim_timer = 0
             if self.new_state == IDLE:
                 self.state      = IDLE
-                self.animation  = minion_1_idle
+                self.animation  = minion_2_idle
                 self.frame      = 0
                 self.anim_time  = .75
                 self.anim_timer = 0
@@ -95,15 +95,13 @@ class Minion1(pygame.sprite.Sprite):
                 self.mask       = pygame.mask.from_surface(self.image)
                 
         self.anim_timer += dt
-        
     def control(self):
         if pygame.sprite.collide_mask(self, self.world.player) and self.state is not BITING:
             self.new_state = BITING
-        elif abs(self.rect.x - self.world.player.rect.x) < 233 and abs(self.rect.y - self.world.player.rect.y) < 133 and self.state is not BITING:
+        elif abs(self.rect.x - self.world.player.rect.x) < 810 and abs(self.rect.y - self.world.player.rect.y) < 384 and self.state is not BITING:
             self.new_state = WALKING
             if abs(self.rect.x - self.world.player.rect.x) <= 5:
                 self.horizontal = None
-                self.dx = 0
             elif self.world.player.rect.x > self.rect.x:
                 self.direction = RIGHT
                 self.horizontal = RIGHT
@@ -112,7 +110,6 @@ class Minion1(pygame.sprite.Sprite):
                 self.horizontal = LEFT
             if abs(self.rect.y - self.world.player.rect.y) <= 5:
                 self.vertical = None
-                self.dy = 0
             elif self.world.player.rect.y > self.rect.y:
                 self.vertical = DOWN
             elif self.world.player.rect.y < self.rect.y:
@@ -120,7 +117,8 @@ class Minion1(pygame.sprite.Sprite):
         else:
             if self.state is not BITING:
                 self.new_state = IDLE
-                
+            
+        
     def mid_update(self, dt):
         if self.horizontal is RIGHT:
             self.dx = 85 * dt
