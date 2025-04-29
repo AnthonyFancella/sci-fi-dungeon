@@ -4,6 +4,8 @@ from src.player import Player
 from src.static import *
 from src.minion_1 import Minion1
 from src.minion_2 import Minion2
+from src.minion_3 import Minion3
+from src.minion_4 import Minion4
 from src.deco_map import *
 import pygame
 import random
@@ -85,7 +87,11 @@ class World:
                         e_x = random.randint(50, 494) + x
                         e_y = random.randint(50, 206) + y
                         e = random.randint(0, 1000)
-                        if e > 500:
+                        if e > 900:
+                            self.enemies.append(Minion4(self, e_x, e_y))
+                        elif e > 800:
+                            self.enemies.append(Minion3(self, e_x, e_y))
+                        elif e > 500:
                             self.enemies.append(Minion2(self, e_x, e_y))
                         else:
                             self.enemies.append(Minion1(self, e_x, e_y))
@@ -175,8 +181,11 @@ class World:
         for e in self.enemies:
             self.surface.blit(self.background, (e.rect.x, e.rect.y), e.rect)
             if e.state is BITING:
-                if e.frame == 3 and pygame.sprite.collide_mask(self.player, e) and not e.bit:
-                    self.player.health -= 1
+                if e.frame >= 3 and pygame.sprite.collide_mask(self.player, e) and not e.bit:
+                    if type(e) is Minion4:
+                        self.player.health -= 2
+                    else:
+                        self.player.health -= 1
                     e.bit = True
         self.surface.blit(self.background, (self.player.rect.x, self.player.rect.y), self.player.rect)
         
@@ -270,7 +279,7 @@ class World:
             screen.blit(health[1], (0, 0))
             screen.blit(health[2], (16, 0))
             screen.blit(health[2], (32, 0))
-        if self.player.health == 0:
+        if self.player.health <= 0:
             screen.blit(health[2], (0, 0))
             screen.blit(health[2], (16, 0))
             screen.blit(health[2], (32, 0))
