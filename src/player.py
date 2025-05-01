@@ -6,8 +6,12 @@ class Player(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
         
-        self.level = 1
-        self.damage = 1
+        self.level      = 1
+        self.damage     = 1
+        self.xp         = 0
+        self.max_health = 6
+        self.leveled    = False
+        self.xp_points  = 0
         
         self.anim_timer = 0
         self.anim_time  = .75
@@ -48,7 +52,7 @@ class Player(pygame.sprite.Sprite):
                     else:
                         self.image = self.animation[self.frame]
                     self.mask  = pygame.mask.from_surface(self.image)
-                elif self.anim_timer >= frame_time + (frame_time * self.frame):
+                elif self.anim_timer > frame_time + (frame_time * self.frame):
                     self.frame += 1
                     if self.direction == LEFT:
                         self.image = pygame.transform.flip(self.animation[self.frame], True, False)
@@ -64,7 +68,7 @@ class Player(pygame.sprite.Sprite):
                     else:
                         self.image = self.animation[self.frame]
                     self.mask  = pygame.mask.from_surface(self.image)
-                elif self.anim_timer >= frame_time + (frame_time * self.frame):
+                elif self.anim_timer > frame_time + (frame_time * self.frame):
                     self.frame += 1
                     if self.direction == LEFT:
                         self.image = pygame.transform.flip(self.animation[self.frame], True, False)
@@ -81,7 +85,7 @@ class Player(pygame.sprite.Sprite):
                     else:
                         self.image = self.animation[self.frame]
                     self.mask       = pygame.mask.from_surface(self.image)
-                elif self.anim_timer >= frame_time + (frame_time * self.frame):
+                elif self.anim_timer > frame_time + (frame_time * self.frame):
                     self.frame += 1
                     if self.direction == LEFT:
                         self.image = pygame.transform.flip(self.animation[self.frame], True, False)
@@ -98,7 +102,7 @@ class Player(pygame.sprite.Sprite):
                     else:
                         self.image = self.animation[self.frame]
                     self.mask  = pygame.mask.from_surface(self.image)
-                elif self.anim_timer >= frame_time + (frame_time * self.frame):
+                elif self.anim_timer > frame_time + (frame_time * self.frame):
                     self.frame += 1
                     if self.direction == LEFT:
                         self.image = pygame.transform.flip(self.animation[self.frame], True, False)
@@ -178,11 +182,11 @@ class Player(pygame.sprite.Sprite):
                 self.state      = DEAD
     
     def change_gun(self):
-        if self.current_gun is PISTOL:
+        if self.current_gun is PISTOL and self.level >= 5:
             if self.state is WALKING:
                 self.animation = player_shotgun_walking
             self.current_gun = SHOTGUN
-        elif self.current_gun is SHOTGUN:
+        elif self.current_gun is SHOTGUN and self.level >= 20:
             if self.state is WALKING:
                 self.animation = player_rifle_walking
             self.current_gun = RIFLE
@@ -190,10 +194,14 @@ class Player(pygame.sprite.Sprite):
             if self.state is WALKING:
                 self.animation = player_unarmed_walking
             self.current_gun = UNARMED
-        else:
+        elif self.current_gun is UNARMED:
             if self.state is WALKING:
                 self.animation = player_pistol_walking
             self.current_gun = PISTOL
+        else:
+            if self.state is WALKING:
+                self.animation = player_unarmed_walking
+            self.current_gun = UNARMED
     
     def mid_update(self, dt):
         if self.horizontal is RIGHT:
@@ -207,6 +215,10 @@ class Player(pygame.sprite.Sprite):
     
     def update(self, screen, dt):
         self.change_state()
+        if self.xp >= (1000 * self.level * .6):
+            self.level += 1
+            self.xp_points += 1
+            self.leveled = True
         if self.state is WALKING:
             if self.horizontal is RIGHT:
                 self.rect.x += self.dx

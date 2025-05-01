@@ -22,7 +22,8 @@ class Minion2(pygame.sprite.Sprite):
         self.horizontal = None
         self.vertical   = None
         
-        self.health = random.randint(150, self.world.player.level * 225)
+        self.health = random.uniform(0, 1) * self.world.player.level * random.randint(100, 250)
+        self.max_health = self.health
         
         self.image  = self.animation[self.frame]
         self.rect   = self.image.get_rect()

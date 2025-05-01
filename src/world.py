@@ -7,6 +7,7 @@ from src.minion_2 import Minion2
 from src.minion_3 import Minion3
 from src.minion_4 import Minion4
 from src.deco_map import *
+from src.hud import *
 import pygame
 import random
 
@@ -69,6 +70,7 @@ class World:
         self.bullets = []
         self.walls = []
         self.player = Player()
+        self.hud = HUD(self)
         self.plaer_shot = False
         
         self.surface = pygame.Surface((4896, 2304))
@@ -104,7 +106,14 @@ class World:
 
     def build(self):
         x, y = 0, 0
+        self.level = Level(1)
+        self.enemies = []
+        self.bullets = []
+        self.walls = []
+        self.plaer_shot = False
         self.level.build()
+        self.background.fill(BLACK)
+        self.surface.fill(BLACK)
         
         for i in range(len(self.level.rooms)):
             for j in range(len(self.level.rooms[i])):
@@ -179,7 +188,7 @@ class World:
         for b in self.bullets:
             self.surface.blit(self.background, (b.rect.x, b.rect.y), b.rect)
         for e in self.enemies:
-            self.surface.blit(self.background, (e.rect.x, e.rect.y), e.rect)
+            self.surface.blit(self.background, (e.rect.x - 5, e.rect.y - 5), (e.rect.x - 5, e.rect.y - 5, e.rect.width + 10, e.rect.height + 10))
             if e.state is BITING:
                 if e.frame >= 3 and pygame.sprite.collide_mask(self.player, e) and not e.bit:
                     if type(e) is Minion4:
@@ -230,6 +239,7 @@ class World:
                         e.rect.left = wall.right
             e.update(self.surface, dt)
             if e.health <= 0:
+                self.player.xp += int(random.uniform(0, 1) * 100 * self.player.level)
                 self.surface.blit(self.background, (e.rect.x, e.rect.y), e.rect)
                 self.enemies.remove(e)
         for b in self.bullets:
@@ -251,38 +261,18 @@ class World:
                     if b.b_type is RIFLE:
                         e.health -= 20 * self.player.damage
                     self.bullets.remove(b)
+                    print((e.health / e.max_health) * 32)
                     break
         
         screen.blit(self.surface, (0, 0), (self.player.rect.x - screen.get_rect().width / 2 + 32, self.player.rect.y - screen.get_rect().height / 2 + 32, screen.get_rect().width, screen.get_rect().height))
         
-        if self.player.health == 6:
-            screen.blit(health[0], (0, 0))
-            screen.blit(health[0], (16, 0))
-            screen.blit(health[0], (32, 0))
-        if self.player.health == 5:
-            screen.blit(health[0], (0, 0))
-            screen.blit(health[0], (16, 0))
-            screen.blit(health[1], (32, 0))
-        if self.player.health == 4:
-            screen.blit(health[0], (0, 0))
-            screen.blit(health[0], (16, 0))
-            screen.blit(health[2], (32, 0))
-        if self.player.health == 3:
-            screen.blit(health[0], (0, 0))
-            screen.blit(health[1], (16, 0))
-            screen.blit(health[2], (32, 0))
-        if self.player.health == 2:
-            screen.blit(health[0], (0, 0))
-            screen.blit(health[2], (16, 0))
-            screen.blit(health[2], (32, 0))
-        if self.player.health == 1:
-            screen.blit(health[1], (0, 0))
-            screen.blit(health[2], (16, 0))
-            screen.blit(health[2], (32, 0))
+        pygame.draw.rect(screen, GREEN, (5, 20, (self.player.xp / (1000 * self.player.level * .6)) * 48, 6))
+        pygame.draw.rect(screen, BLACK, (5, 20, 48, 6), width=2)
+        xps = FONT.render(f"{self.player.xp} / {1000 * self.player.level * .6}", True, RED)
+        screen.blit(xps, (5, 30))
+        
+        self.hud.update(screen)
         if self.player.health <= 0:
-            screen.blit(health[2], (0, 0))
-            screen.blit(health[2], (16, 0))
-            screen.blit(health[2], (32, 0))
             self.player.new_state = DYING
             self.player.change_state()
             while self.player.state is DYING:
